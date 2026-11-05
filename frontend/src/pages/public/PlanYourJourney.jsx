@@ -57,6 +57,7 @@ const PlanYourJourney = () => {
         travelDate: form.travelDate || undefined,
         travellers: form.travellers,
         message,
+        contactConsent: form.consent,
       });
 
       setSubmitted(true);
