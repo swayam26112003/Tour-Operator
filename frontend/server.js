@@ -6,7 +6,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const isProduction = process.env.NODE_ENV === "production";
 const app = express();
-const frontendPort = Number(process.env.FRONTEND_PORT || 5173);
+const frontendPort = Number(process.env.PORT || process.env.FRONTEND_PORT || 5173);
 const backendUrl = (process.env.BACKEND_URL || "http://localhost:5000").replace(/\/$/, "");
 const clientDist = path.join(__dirname, "dist", "client");
 let vite;
@@ -138,7 +138,7 @@ app.listen(frontendPort, () => {
   console.log(`Backend API: ${backendUrl}`);
 });
 
-process.on("SIGINT", async () => {
+process.on("SIGINT",  "0.0.0.0",async () => {
   if (vite) await vite.close();
   process.exit(0);
 });
