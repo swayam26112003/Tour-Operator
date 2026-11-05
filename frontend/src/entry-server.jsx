@@ -1,7 +1,7 @@
 import React from "react";
 import { renderToString } from "react-dom/server";
 import { Routes, Route } from "react-router-dom";
-import { StaticRouter } from "react-router-dom/server";
+import { StaticRouter } from "react-router";
 import PublicLayout from "./layouts/PublicLayout.jsx";
 import KeralaJourneys from "./pages/public/KeralaJourneys.jsx";
 import PackageDetails from "./pages/public/PackageDetails.jsx";
