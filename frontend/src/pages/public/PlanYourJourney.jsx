@@ -29,7 +29,9 @@ const PlanYourJourney = () => {
     event.preventDefault();
 
     if (!form.consent) {
-      setError("Please agree to be contacted about this enquiry before sending.");
+      setError(
+        "Please agree to be contacted about this enquiry before sending.",
+      );
       return;
     }
 
@@ -63,7 +65,7 @@ const PlanYourJourney = () => {
       setError(
         requestError.response?.data?.message ||
           requestError.message ||
-          "We couldn't send your enquiry. Please try again."
+          "We couldn't send your enquiry. Please try again.",
       );
     } finally {
       setSubmitting(false);
@@ -176,7 +178,9 @@ const PlanYourJourney = () => {
                   </label>
                   <select
                     value={form.destination}
-                    onChange={(event) => update("destination", event.target.value)}
+                    onChange={(event) =>
+                      update("destination", event.target.value)
+                    }
                     className="w-full border-b border-[#dfe3d9] bg-transparent py-3 text-sm outline-none"
                   >
                     <option>Not sure yet</option>
@@ -193,7 +197,9 @@ const PlanYourJourney = () => {
                   <input
                     type="date"
                     value={form.travelDate}
-                    onChange={(event) => update("travelDate", event.target.value)}
+                    onChange={(event) =>
+                      update("travelDate", event.target.value)
+                    }
                     className="w-full border-b border-[#dfe3d9] py-3 text-sm outline-none"
                   />
                 </div>
@@ -203,7 +209,9 @@ const PlanYourJourney = () => {
                   </label>
                   <select
                     value={form.travellers}
-                    onChange={(event) => update("travellers", event.target.value)}
+                    onChange={(event) =>
+                      update("travellers", event.target.value)
+                    }
                     className="w-full border-b border-[#dfe3d9] bg-transparent py-3 text-sm outline-none"
                   >
                     <option>1 adult</option>
@@ -268,7 +276,10 @@ const PlanYourJourney = () => {
                 <input
                   type="checkbox"
                   checked={form.consent}
-                  onChange={(event) => update("consent", event.target.checked)}
+                  onChange={(event) => {
+                    update("consent", event.target.checked);
+                    setError("");
+                  }}
                   className="mt-1 accent-[#174b38]"
                 />
                 <span>
@@ -288,7 +299,9 @@ const PlanYourJourney = () => {
                 disabled={submitting}
                 className="w-full bg-[#174b38] py-5 text-xs tracking-[1px] text-white transition hover:bg-[#28634e] disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {submitting ? "Sending your request..." : "Send my journey request →"}
+                {submitting
+                  ? "Sending your request..."
+                  : "Send my journey request →"}
               </button>
             </form>
           )}

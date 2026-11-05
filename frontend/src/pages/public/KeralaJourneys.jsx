@@ -84,12 +84,19 @@ const KeralaJourneys = ({ initialData = null } = {}) => {
   const [search, setSearch] = useState("");
   const [selectedStyle, setSelectedStyle] = useState("All");
   const [sort, setSort] = useState("recommended");
-  const bootstrapPackages = initialData ??
-    (typeof window !== "undefined" ? window.__SSR_DATA__?.packages ?? null : null);
+  const bootstrapPackages =
+    initialData ??
+    (typeof window !== "undefined"
+      ? (window.__SSR_DATA__?.packages ?? null)
+      : null);
   const [journeys, setJourneys] = useState(() =>
-    Array.isArray(bootstrapPackages) ? bootstrapPackages.map(mapPackageToJourney) : []
+    Array.isArray(bootstrapPackages)
+      ? bootstrapPackages.map(mapPackageToJourney)
+      : [],
   );
-  const [loading, setLoading] = useState(() => !Array.isArray(bootstrapPackages));
+  const [loading, setLoading] = useState(
+    () => !Array.isArray(bootstrapPackages),
+  );
   const [loadError, setLoadError] = useState("");
 
   const destinationFilter = searchParams.get("destination") || "";
@@ -391,7 +398,7 @@ const KeralaJourneys = ({ initialData = null } = {}) => {
           </div>
 
           <Link
-            to="/journeys"
+            to="/plan-your-journey"
             className="bg-[#174b38] px-7 py-4 text-xs text-white transition hover:bg-[#28634e]"
           >
             Plan a custom journey →
