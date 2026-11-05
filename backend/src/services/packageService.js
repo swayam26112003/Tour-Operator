@@ -1,4 +1,3 @@
-
 import prisma from "../config/database.js";
 
 console.log("Package service Prisma check:", typeof prisma.package);
@@ -62,17 +61,15 @@ export const getPackageBySlug = async (slug) => {
 
 // CREATE PACKAGE
 export const createPackage = async (data) => {
-  const { itinerary, hotels, ...packageData } = data;
+  const { itinerary, hotels, changeNote, ...packageData } = data;
 
   return prisma.package.create({
     data: {
       ...packageData,
-      itinerary: itinerary?.length
-        ? { create: itinerary }
-        : undefined,
-      hotels: hotels?.length
-        ? { create: hotels }
-        : undefined,
+
+      itinerary: itinerary?.length ? { create: itinerary } : undefined,
+
+      hotels: hotels?.length ? { create: hotels } : undefined,
     },
     include: {
       itinerary: true,
@@ -84,20 +81,26 @@ export const createPackage = async (data) => {
 
 // Resolve a unique slug while excluding the package being edited.
 // This prevents duplicated packages from overwriting an existing copy slug.
-const resolveUniquePackageSlug = async (tx, requestedSlug, currentPackageId) => {
+const resolveUniquePackageSlug = async (
+  tx,
+  requestedSlug,
+  currentPackageId,
+) => {
   if (!requestedSlug) return requestedSlug;
 
   const baseSlug = String(requestedSlug).trim();
   let candidate = baseSlug;
   let suffix = 2;
 
-  while (await tx.package.findFirst({
-    where: {
-      slug: candidate,
-      ...(currentPackageId ? { id: { not: currentPackageId } } : {}),
-    },
-    select: { id: true },
-  })) {
+  while (
+    await tx.package.findFirst({
+      where: {
+        slug: candidate,
+        ...(currentPackageId ? { id: { not: currentPackageId } } : {}),
+      },
+      select: { id: true },
+    })
+  ) {
     candidate = `${baseSlug}-${suffix}`;
     suffix += 1;
   }
@@ -107,152 +110,148 @@ const resolveUniquePackageSlug = async (tx, requestedSlug, currentPackageId) => 
 
 // UPDATE PACKAGE + AUTOMATIC VERSION HISTORY
 export const updatePackage = async (id, data) => {
-  const {
-    itinerary,
-    hotels,
-    changeNote,
-    ...packageData
-  } = data;
+  const { itinerary, hotels, changeNote, ...packageData } = data;
 
-  return prisma.$transaction(async (tx) => {
-    // 1. Fetch the existing package and all related data
-    const existingPackage = await tx.package.findUnique({
-      where: { id },
-      include: {
-        itinerary: {
-          orderBy: { dayNumber: "asc" },
-        },
-        hotels: true,
-        seasonalPrices: true,
-      },
-    });
-
-    if (!existingPackage) {
-      const error = new Error("Package not found");
-      error.code = "P2025";
-      throw error;
-    }
-
-    const resolvedSlug =
-      packageData.slug !== undefined
-        ? await resolveUniquePackageSlug(tx, packageData.slug, id)
-        : undefined;
-
-    // 2. Find the latest version number
-    const latestVersion = await tx.packageVersion.aggregate({
-      where: { packageId: id },
-      _max: {
-        version: true,
-      },
-    });
-
-    const nextVersion =
-      (latestVersion._max.version ?? 0) + 1;
-
-    // 3. Create a complete JSON-safe snapshot
-    const snapshot = {
-      title: existingPackage.title,
-      slug: existingPackage.slug,
-      code: existingPackage.code,
-      description: existingPackage.description,
-      destination: existingPackage.destination,
-      duration: existingPackage.duration,
-      price: existingPackage.price.toString(),
-      image: existingPackage.image,
-      category: existingPackage.category,
-      status: existingPackage.status,
-      scheduledAt: existingPackage.scheduledAt?.toISOString() ?? null,
-      featured: existingPackage.featured,
-      inclusions: existingPackage.inclusions || [],
-      exclusions: existingPackage.exclusions || [],
-      mapStops: existingPackage.mapStops || [],
-
-      itinerary: existingPackage.itinerary.map((day) => ({
-        dayNumber: day.dayNumber,
-        title: day.title,
-        description: day.description,
-        location: day.location,
-        activities: day.activities,
-      })),
-
-      hotels: existingPackage.hotels.map((hotel) => ({
-        name: hotel.name,
-        location: hotel.location,
-        roomType: hotel.roomType,
-        description: hotel.description,
-        image: hotel.image,
-        price: hotel.price?.toString() ?? null,
-      })),
-
-      seasonalPrices: existingPackage.seasonalPrices.map((price) => ({
-        season: price.season,
-        hotelCategory: price.hotelCategory,
-        validFrom: price.validFrom.toISOString(),
-        validTo: price.validTo.toISOString(),
-        pricePerPerson: price.pricePerPerson.toString(),
-        priceTwinSharing: price.priceTwinSharing.toString(),
-        gstPercentage: price.gstPercentage.toString(),
-      })),
-    };
-
-    // 4. Save the previous package state
-    await tx.packageVersion.create({
-      data: {
-        packageId: id,
-        version: nextVersion,
-        snapshot,
-        changeNote:
-          changeNote || "Automatic snapshot before package update",
-      },
-    });
-
-    // 5. Replace itinerary if supplied
-    if (itinerary !== undefined) {
-      await tx.itineraryDay.deleteMany({
-        where: { packageId: id },
-      });
-    }
-
-    // 6. Replace hotels if supplied
-    if (hotels !== undefined) {
-      await tx.hotel.deleteMany({
-        where: { packageId: id },
-      });
-    }
-
-    // 7. Update the package
-    const updatedPackage = await tx.package.update({
-      where: { id },
-      data: {
-        ...packageData,
-        ...(resolvedSlug !== undefined && { slug: resolvedSlug }),
-
-        ...(itinerary !== undefined && {
+  return prisma.$transaction(
+    async (tx) => {
+      // 1. Fetch the existing package and all related data
+      const existingPackage = await tx.package.findUnique({
+        where: { id },
+        include: {
           itinerary: {
-            create: itinerary,
+            orderBy: { dayNumber: "asc" },
           },
-        }),
-
-        ...(hotels !== undefined && {
-          hotels: {
-            create: hotels,
-          },
-        }),
-      },
-      include: {
-        itinerary: {
-          orderBy: { dayNumber: "asc" },
+          hotels: true,
+          seasonalPrices: true,
         },
-        hotels: true,
-        seasonalPrices: true,
-      },
-    });
+      });
 
-        return updatedPackage;
-  }, {
-    maxWait: 15000,
-    timeout: 30000,
-  });
+      if (!existingPackage) {
+        const error = new Error("Package not found");
+        error.code = "P2025";
+        throw error;
+      }
+
+      const resolvedSlug =
+        packageData.slug !== undefined
+          ? await resolveUniquePackageSlug(tx, packageData.slug, id)
+          : undefined;
+
+      // 2. Find the latest version number
+      const latestVersion = await tx.packageVersion.aggregate({
+        where: { packageId: id },
+        _max: {
+          version: true,
+        },
+      });
+
+      const nextVersion = (latestVersion._max.version ?? 0) + 1;
+
+      // 3. Create a complete JSON-safe snapshot
+      const snapshot = {
+        title: existingPackage.title,
+        slug: existingPackage.slug,
+        code: existingPackage.code,
+        description: existingPackage.description,
+        destination: existingPackage.destination,
+        duration: existingPackage.duration,
+        price: existingPackage.price.toString(),
+        image: existingPackage.image,
+        category: existingPackage.category,
+        status: existingPackage.status,
+        scheduledAt: existingPackage.scheduledAt?.toISOString() ?? null,
+        featured: existingPackage.featured,
+        inclusions: existingPackage.inclusions || [],
+        exclusions: existingPackage.exclusions || [],
+        mapStops: existingPackage.mapStops || [],
+
+        itinerary: existingPackage.itinerary.map((day) => ({
+          dayNumber: day.dayNumber,
+          title: day.title,
+          description: day.description,
+          location: day.location,
+          activities: day.activities,
+        })),
+
+        hotels: existingPackage.hotels.map((hotel) => ({
+          name: hotel.name,
+          location: hotel.location,
+          roomType: hotel.roomType,
+          description: hotel.description,
+          image: hotel.image,
+          price: hotel.price?.toString() ?? null,
+        })),
+
+        seasonalPrices: existingPackage.seasonalPrices.map((price) => ({
+          season: price.season,
+          hotelCategory: price.hotelCategory,
+          validFrom: price.validFrom.toISOString(),
+          validTo: price.validTo.toISOString(),
+          pricePerPerson: price.pricePerPerson.toString(),
+          priceTwinSharing: price.priceTwinSharing.toString(),
+          gstPercentage: price.gstPercentage.toString(),
+        })),
+      };
+
+      // 4. Save the previous package state
+      await tx.packageVersion.create({
+        data: {
+          packageId: id,
+          version: nextVersion,
+          snapshot,
+          changeNote: changeNote || "Automatic snapshot before package update",
+        },
+      });
+
+      // 5. Replace itinerary if supplied
+      if (itinerary !== undefined) {
+        await tx.itineraryDay.deleteMany({
+          where: { packageId: id },
+        });
+      }
+
+      // 6. Replace hotels if supplied
+      if (hotels !== undefined) {
+        await tx.hotel.deleteMany({
+          where: { packageId: id },
+        });
+      }
+
+      // 7. Update the package
+      const updatedPackage = await tx.package.update({
+        where: { id },
+        data: {
+          ...packageData,
+          ...(resolvedSlug !== undefined && { slug: resolvedSlug }),
+
+          ...(itinerary !== undefined && {
+            itinerary: {
+              create: itinerary,
+            },
+          }),
+
+          ...(hotels !== undefined && {
+            hotels: {
+              create: hotels,
+            },
+          }),
+        },
+        include: {
+          itinerary: {
+            orderBy: { dayNumber: "asc" },
+          },
+          hotels: true,
+          seasonalPrices: true,
+        },
+      });
+
+      return updatedPackage;
+    },
+    {
+      maxWait: 15000,
+      timeout: 30000,
+    },
+  );
 };
 
 // DELETE PACKAGE
@@ -360,10 +359,7 @@ export const previewPackage = async (packageId) => {
       },
       hotels: true,
       seasonalPrices: {
-        orderBy: [
-          { validFrom: "asc" },
-          { season: "asc" },
-        ],
+        orderBy: [{ validFrom: "asc" }, { season: "asc" }],
       },
     },
   });
@@ -374,7 +370,6 @@ export const previewPackage = async (packageId) => {
 
   return packageData;
 };
-
 
 export const getPackageVersions = async (packageId) => {
   // Verify that the package exists
@@ -594,6 +589,6 @@ export const restorePackageVersion = async (packageId, versionId) => {
     {
       maxWait: 15000,
       timeout: 30000,
-    }
+    },
   );
 };
