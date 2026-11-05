@@ -1,0 +1,373 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum PackageStatus {
+  DRAFT
+  PUBLISHED
+  SCHEDULED
+  ARCHIVED
+}
+
+enum EnquiryStatus {
+  NEW
+  CONTACTED
+  FOLLOW_UP
+  QUOTED
+  CONFIRMED
+  CANCELLED
+}
+
+enum JournalStatus {
+  DRAFT
+  PUBLISHED
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum HotelCategory {
+  STANDARD
+  DELUXE
+  PREMIUM
+}
+
+enum TravelSeason {
+  OFF_SEASON
+  MONSOON
+  PEAK
+}
+
+enum QuoteStatus {
+  DRAFT
+  SENT
+  ACCEPTED
+  REJECTED
+  EXPIRED
+}
+
+enum QuoteHotelCategory {
+  STANDARD
+  DELUXE
+  PREMIUM
+}
+
+model Role {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  permissions Json?
+  users       User[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model User {
+  id           String     @id @default(cuid())
+  name         String
+  email        String     @unique
+  passwordHash String
+  phone        String?
+  status       UserStatus @default(ACTIVE)
+
+  roleId String
+  role   Role   @relation(fields: [roleId], references: [id])
+
+  assignedEnquiries Enquiry[]     @relation("AssignedEnquiries")
+  activityLogs      ActivityLog[]
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  createdQuotes     Quote[]       @relation("CreatedQuotes")
+}
+
+model Package {
+  id          String        @id @default(cuid())
+  title       String
+  slug        String        @unique
+  code        String?       @unique
+  description String?
+  destination String?
+  duration    String?
+  price       Decimal       @default(0) @db.Decimal(10, 2)
+  image       String?
+  category    String?
+  status      PackageStatus @default(DRAFT)
+  featured    Boolean       @default(false)
+
+  inclusions String[] @default([])
+  exclusions String[] @default([])
+  mapStops   String[] @default([])
+
+  itinerary ItineraryDay[]
+  hotels    Hotel[]
+  enquiries Enquiry[]
+
+  createdAt      DateTime               @default(now())
+  updatedAt      DateTime               @updatedAt
+  seasonalPrices PackageSeasonalPrice[]
+  versions       PackageVersion[]
+  blogArticles   JournalArticle[]
+  quotes         Quote[]
+  scheduledAt DateTime?
+  @@index([status, scheduledAt])
+  
+}
+
+model ItineraryDay {
+  id          String   @id @default(cuid())
+  dayNumber   Int
+  title       String
+  description String?
+  location    String?
+  activities  String[]
+
+  packageId String
+  package   Package @relation(fields: [packageId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([packageId, dayNumber])
+}
+
+model Hotel {
+  id          String   @id @default(cuid())
+  name        String
+  location    String?
+  roomType    String?
+  description String?
+  image       String?
+  price       Decimal? @db.Decimal(10, 2)
+
+  packageId String
+  package   Package @relation(fields: [packageId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Enquiry {
+  id         String        @id @default(cuid())
+  name       String
+  email      String
+  phone      String
+  travelDate DateTime?
+  travellers String?
+  message    String?
+
+  // AI enquiry assistant results
+  aiExtractedData     Json?
+  aiSuggestedPackages Json?
+  aiReplyDraft        String?
+  aiProcessedAt       DateTime?
+
+  status     EnquiryStatus @default(NEW)
+  priority   Boolean       @default(false)
+
+  packageId String?
+  package   Package? @relation(fields: [packageId], references: [id], onDelete: SetNull)
+
+  assignedToId String?
+  assignedTo   User? @relation("AssignedEnquiries", fields: [assignedToId], references: [id], onDelete: SetNull)
+
+  notes    EnquiryNote[]
+  messages EnquiryMessage[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  quotes    Quote[]
+  contactConsent   Boolean   @default(false)
+  contactConsentAt DateTime?
+}
+
+model EnquiryNote {
+  id        String   @id @default(cuid())
+  content   String
+  enquiryId String
+  enquiry   Enquiry  @relation(fields: [enquiryId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
+
+model EnquiryMessage {
+  id        String   @id @default(cuid())
+  content   String
+  direction String
+  enquiryId String
+  enquiry   Enquiry  @relation(fields: [enquiryId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
+
+model JournalArticle {
+  id             String        @id @default(cuid())
+  title          String
+  slug           String        @unique
+  excerpt        String?
+  content        String?
+  coverImage     String?
+  category       String?
+  author         String?
+  seoTitle       String?
+  seoDescription String?
+  status         JournalStatus @default(DRAFT)
+  publishedAt    DateTime?
+
+  relatedPackages Package[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ActivityLog {
+  id String @id @default(cuid())
+
+  action     String
+  entityType String
+  entityId   String
+  details    Json?
+
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+
+  @@index([entityType, entityId])
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model PackageSeasonalPrice {
+  id String @id @default(cuid())
+
+  packageId String
+  package   Package @relation(fields: [packageId], references: [id], onDelete: Cascade)
+
+  season        TravelSeason
+  hotelCategory HotelCategory
+
+  validFrom DateTime
+  validTo   DateTime
+
+  pricePerPerson   Decimal @db.Decimal(10, 2)
+  priceTwinSharing Decimal @db.Decimal(10, 2)
+  gstPercentage    Decimal @default(5.00) @db.Decimal(5, 2)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([packageId])
+  @@index([packageId, season, hotelCategory])
+  @@index([validFrom, validTo])
+}
+
+model PackageVersion {
+  id String @id @default(cuid())
+
+  packageId String
+  package   Package @relation(fields: [packageId], references: [id], onDelete: Cascade)
+
+  version    Int
+  snapshot   Json
+  changeNote String?
+
+  createdAt DateTime @default(now())
+
+  @@unique([packageId, version])
+  @@index([packageId, createdAt])
+}
+
+model Quote {
+  id          String      @id @default(cuid())
+  quoteNumber String      @unique
+  shareToken  String      @unique
+  status      QuoteStatus @default(DRAFT)
+
+  // Package and enquiry relationships
+  packageId String?
+  package   Package? @relation(fields: [packageId], references: [id], onDelete: SetNull)
+
+  enquiryId String?
+  enquiry   Enquiry? @relation(fields: [enquiryId], references: [id], onDelete: SetNull)
+
+  // Consultant who created the quotation
+  createdById String?
+  createdBy   User?   @relation("CreatedQuotes", fields: [createdById], references: [id], onDelete: SetNull)
+
+  // Traveller details
+  travellerName    String
+  travellerEmail   String
+  travellerPhone   String
+  travelDate       DateTime?
+  returnDate       DateTime?
+  numberOfAdults   Int       @default(1)
+  numberOfChildren Int       @default(0)
+
+  // Package and hotel selection
+  hotelCategory QuoteHotelCategory?
+  travelSeason  TravelSeason?
+
+  // Pricing
+  currency       String  @default("INR")
+  subtotal       Decimal @db.Decimal(12, 2)
+  discountAmount Decimal @default(0) @db.Decimal(12, 2)
+  gstPercentage  Decimal @default(5.00) @db.Decimal(5, 2)
+  gstAmount      Decimal @default(0) @db.Decimal(12, 2)
+  totalAmount    Decimal @db.Decimal(12, 2)
+
+  // Quotation validity
+  validUntil DateTime
+
+  // Additional information
+  notes    String?
+  terms    String?
+  pdfUrl   String?
+  snapshot Json
+
+  items QuoteItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([packageId])
+  @@index([enquiryId])
+  @@index([createdById])
+  @@index([status])
+  @@index([validUntil])
+  @@index([createdAt])
+}
+
+model QuoteItem {
+  id          String  @id @default(cuid())
+  description String
+  quantity    Int     @default(1)
+  unitPrice   Decimal @db.Decimal(12, 2)
+  totalPrice  Decimal @db.Decimal(12, 2)
+
+  quoteId String
+  quote   Quote  @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([quoteId])
+}
+
+model MediaAsset {
+  id        String   @id @default(cuid())
+  name      String
+  url       String   @unique
+  altText   String?
+  category  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([name])
+  @@index([category])
+  @@index([createdAt])
+}
