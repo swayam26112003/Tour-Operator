@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import PackageCard from "../../components/PackageCard";
@@ -27,7 +26,6 @@ const destinations = [
       "https://images.unsplash.com/photo-1472396961693-142e6e269027?w=1200&q=85",
   },
 ];
-
 
 const faqs = [
   {
@@ -91,7 +89,7 @@ const Home = () => {
         setPackagesError("");
 
         const response = await api.get("/packages", {
-          params: { status: "PUBLISHED", featured: true },
+          params: { status: "PUBLISHED" },
         });
 
         const records = response.data?.data ?? response.data?.packages ?? [];
@@ -105,7 +103,10 @@ const Home = () => {
           const route = itinerary
             .map((day) => day.location)
             .filter(Boolean)
-            .filter((location, index, locations) => locations.indexOf(location) === index)
+            .filter(
+              (location, index, locations) =>
+                locations.indexOf(location) === index,
+            )
             .join(" → ");
 
           const seasonalPrices = Array.isArray(pkg.seasonalPrices)
@@ -189,7 +190,7 @@ const Home = () => {
         if (isMounted) {
           setJournalError(
             error.response?.data?.message ||
-              "Travel stories are temporarily unavailable."
+              "Travel stories are temporarily unavailable.",
           );
         }
       } finally {
@@ -219,7 +220,6 @@ const Home = () => {
 
   return (
     <main className="w-full overflow-hidden bg-[#f8f8f2] text-[#244536]">
-
       {/* HERO SECTION */}
 
       <section className="relative flex min-h-[650px] items-center lg:min-h-[740px]">
@@ -418,9 +418,7 @@ const Home = () => {
                 <h3 className="font-serif text-3xl md:text-4xl">
                   {place.name}
                 </h3>
-                <p className="mt-2 text-xs text-white/80">
-                  {place.subtitle}
-                </p>
+                <p className="mt-2 text-xs text-white/80">{place.subtitle}</p>
               </div>
 
               <span className="absolute right-6 top-6 text-xl text-white">
@@ -464,13 +462,14 @@ const Home = () => {
             </div>
           ) : (
             <p className="py-12 text-center text-sm text-[#778277]">
-              {packagesError || "New journeys are being prepared. Please check back soon."}
+              {packagesError ||
+                "New journeys are being prepared. Please check back soon."}
             </p>
           )}
 
           <p className="mt-9 text-center text-[11px] text-[#818779]">
-            Indicative prices per person on twin sharing. Your dates, stays
-            and inclusions shape the final quote.
+            Indicative prices per person on twin sharing. Your dates, stays and
+            inclusions shape the final quote.
           </p>
         </div>
       </section>
@@ -517,13 +516,9 @@ const Home = () => {
                 {style.title}
               </h3>
 
-              <p className="mt-3 text-sm text-[#778277]">
-                {style.subtitle}
-              </p>
+              <p className="mt-3 text-sm text-[#778277]">{style.subtitle}</p>
 
-              <p className="mt-7 text-xs text-[#9a805a]">
-                Find my journey ↗
-              </p>
+              <p className="mt-7 text-xs text-[#9a805a]">Find my journey ↗</p>
             </Link>
           ))}
         </div>
@@ -567,9 +562,7 @@ const Home = () => {
                 "Travel with local support",
               ].map((item, index) => (
                 <div key={item}>
-                  <span className="text-[#c3b18a]">
-                    0{index + 1}
-                  </span>
+                  <span className="text-[#c3b18a]">0{index + 1}</span>
                   <p className="mt-2">{item}</p>
                 </div>
               ))}
@@ -598,8 +591,8 @@ const Home = () => {
           </h2>
 
           <p className="mt-6 max-w-lg text-sm leading-7 text-[#778277]">
-            Clear mornings in the hills, gentle days by the sea and long,
-            lazy houseboat afternoons. This is Kerala at its unhurried best.
+            Clear mornings in the hills, gentle days by the sea and long, lazy
+            houseboat afternoons. This is Kerala at its unhurried best.
           </p>
 
           <Link
@@ -674,7 +667,8 @@ const Home = () => {
           ) : (
             <div className="py-12 text-center">
               <p className="text-sm text-[#778277]">
-                {journalError || "New travel stories are being prepared. Please check back soon."}
+                {journalError ||
+                  "New travel stories are being prepared. Please check back soon."}
               </p>
               <Link
                 to="/journal"
@@ -706,14 +700,9 @@ const Home = () => {
 
         <div>
           {faqs.map((faq, index) => (
-            <div
-              key={faq.question}
-              className="border-b border-[#dfe3d9] py-6"
-            >
+            <div key={faq.question} className="border-b border-[#dfe3d9] py-6">
               <button
-                onClick={() =>
-                  setOpenFaq(openFaq === index ? -1 : index)
-                }
+                onClick={() => setOpenFaq(openFaq === index ? -1 : index)}
                 className="flex w-full items-center justify-between gap-5 text-left"
               >
                 <span className="font-serif text-lg text-[#174b38]">
@@ -757,7 +746,6 @@ const Home = () => {
           </Link>
         </div>
       </section>
-
     </main>
   );
 };
