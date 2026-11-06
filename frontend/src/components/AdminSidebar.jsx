@@ -4,23 +4,30 @@ const menuGroups = [
   {
     title: "WORKSPACE",
     items: [
-      { label: "Overview", path: "/admin", icon: "▦" },
+      { label: "Admin overview", path: "/admin", icon: "▦" },
       { label: "Enquiries", path: "/admin/enquiries", icon: "✉" },
       { label: "Quote builder", path: "/admin/quotes", icon: "₹" },
+    ],
+  },
+  {
+    title: "TEAM WORKSPACES",
+    items: [
+      { label: "Editor workspace", path: "/admin/editor", icon: "▤" },
+      { label: "Consultant workspace", path: "/admin/consultant", icon: "◎" },
     ],
   },
   {
     title: "CONTENT",
     items: [
       { label: "Package library", path: "/admin/packages", icon: "◇" },
-      { label: "Journal articles", path: "/admin/journal/edit", icon: "▤" },
-      { label: "Media library", path: "/admin/media", icon: "▧" },
+      { label: "Journal articles", path: "/admin/journal/edit", icon: "▧" },
+      { label: "Media library", path: "/admin/media", icon: "▩" },
     ],
   },
   {
     title: "SETTINGS",
     items: [
-      { label: "Roles & team", path: "/admin/roles", icon: "◎" },
+      { label: "Roles & team", path: "/admin/roles", icon: "♙" },
       { label: "Activity log", path: "/admin/activity", icon: "◷" },
     ],
   },
@@ -39,7 +46,7 @@ const AdminSidebar = ({ onNavigate }) => (
 
     <div className="shrink-0 px-6 py-6">
       <p className="text-[9px] uppercase tracking-[3px] text-[#a9b9ad]">
-        Administration
+        Team workspaces
       </p>
     </div>
 
@@ -67,9 +74,7 @@ const AdminSidebar = ({ onNavigate }) => (
                   }`
                 }
               >
-                <span className="w-5 shrink-0 text-center text-base">
-                  {item.icon}
-                </span>
+                <span className="w-5 shrink-0 text-center text-base">{item.icon}</span>
                 <span>{item.label}</span>
                 <span className="ml-auto text-xs opacity-60">→</span>
               </NavLink>

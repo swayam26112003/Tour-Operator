@@ -15,6 +15,8 @@ import PackageDetails from "./pages/public/PackageDetails";
 import JournalArticle from "./pages/public/JournalArticle";
 import PlanYourJourney from "./pages/public/PlanYourJourney";
 import AdminDashboard from "./pages/admin/AdminDashboard";
+import EditorDashboard from "./pages/admin/EditorDashboard";
+import ConsultantDashboard from "./pages/admin/ConsultantDashboard";
 import PackageLibrary from "./pages/admin/PackageLibrary";
 import EditPackage from "./pages/admin/EditPackage";
 import EnquiryInbox from "./pages/admin/EnquiryInbox";
@@ -56,7 +58,9 @@ function NotFound() {
         <p className="text-xs uppercase tracking-[3px] text-[#a17e50]">Page not found</p>
         <h1 className="mt-4 font-serif text-6xl text-[#174b38]">404</h1>
         <p className="mt-4 text-sm text-[#718075]">The page you're looking for doesn't exist.</p>
-        <Link to="/" className="mt-7 inline-block bg-[#174b38] px-7 py-3 text-sm text-white">Back to home</Link>
+        <Link to="/" className="mt-7 inline-block bg-[#174b38] px-7 py-3 text-sm text-white">
+          Back to home
+        </Link>
       </div>
     </div>
   );
@@ -75,6 +79,8 @@ function AppRoutes() {
         <Route path="/plan-your-journey" element={<PublicLayout><PlanYourJourney /></PublicLayout>} />
 
         <Route path="/admin" element={<AdminLayout><AdminDashboard /></AdminLayout>} />
+        <Route path="/admin/editor" element={<AdminLayout><EditorDashboard /></AdminLayout>} />
+        <Route path="/admin/consultant" element={<AdminLayout><ConsultantDashboard /></AdminLayout>} />
         <Route path="/admin/packages" element={<AdminLayout><PackageLibrary /></AdminLayout>} />
         <Route path="/admin/packages/:id/edit" element={<AdminLayout><EditPackage /></AdminLayout>} />
         <Route path="/admin/enquiries" element={<AdminLayout><EnquiryInbox /></AdminLayout>} />
