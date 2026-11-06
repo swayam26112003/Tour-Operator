@@ -353,7 +353,7 @@ const KeralaJourneys = ({ initialData = null } = {}) => {
             <p className="mt-3 text-sm text-gray-500">{loadError}</p>
           </div>
         ) : filteredJourneys.length > 0 ? (
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+          <div className={`grid grid-cols-1 items-stretch gap-6 md:grid-cols-2 lg:gap-8 ${filteredJourneys.length >= 3 ? "xl:grid-cols-3" : "xl:max-w-[1120px]"}`}>
             {filteredJourneys.map((journey) => (
               <PackageCard key={journey.id} {...journey} />
             ))}
