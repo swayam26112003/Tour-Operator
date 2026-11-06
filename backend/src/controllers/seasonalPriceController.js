@@ -130,7 +130,6 @@ export const listSeasonalPrices = async (req, res) => {
   }
 };
 
-// UPDATE seasonal price
 export const editSeasonalPrice = async (req, res) => {
   try {
     const errors = validatePriceData(req.body, true);
@@ -166,7 +165,6 @@ export const editSeasonalPrice = async (req, res) => {
   }
 };
 
-// DELETE seasonal price
 export const removeSeasonalPrice = async (req, res) => {
   try {
     await deleteSeasonalPrice(

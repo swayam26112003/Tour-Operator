@@ -48,8 +48,6 @@ const PlanYourJourney = () => {
       setSubmitting(true);
       setError("");
 
-      // Keep the payload consistent with the existing package enquiry form.
-      // A custom enquiry deliberately has no packageId.
       await api.post("/enquiries", {
         name: form.name.trim(),
         email: form.email.trim(),

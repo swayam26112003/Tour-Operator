@@ -13,7 +13,7 @@ export const createEnquiry = async (data) => {
       travellers: data.travellers,
       message: data.message || null,
       packageId: data.packageId || null,
-      contactConsent: true,
+      contactConsent: form.consent,
       contactConsentAt: new Date(),
     },
     include: {

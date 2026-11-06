@@ -6,7 +6,6 @@ import PublicLayout from "./layouts/PublicLayout.jsx";
 import KeralaJourneys from "./pages/public/KeralaJourneys.jsx";
 import PackageDetails from "./pages/public/PackageDetails.jsx";
 
-// The same public components are used by the browser app and this server renderer.
 export function render(url, data = {}) {
   const markup = renderToString(
     <StaticRouter location={url}>

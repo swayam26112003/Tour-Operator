@@ -91,7 +91,6 @@ app.get("/api/health", async (req, res) => {
   }
 });
 
-// Root endpoint
 app.get("/", (req, res) => {
   res.json({
     message: "Tour Operator API is running",

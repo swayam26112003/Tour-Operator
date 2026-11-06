@@ -3,8 +3,6 @@ import * as enquiryService from "../services/enquiryService.js";
 import { createActivityLog } from "../services/activityLogService.js";
 import { processEnquiryWithAI } from "../services/aiEnquiryService.js";
 
-// Activity logging is secondary to the enquiry operation. Do not return an API
-// failure after the primary database write has already succeeded.
 const recordActivitySafely = async (entry) => {
   try {
     await createActivityLog(entry);
@@ -13,7 +11,6 @@ const recordActivitySafely = async (entry) => {
   }
 };
 
-// Submit a new public enquiry.
 export const submitEnquiry = async (req, res) => {
   try {
     const body = req.body || {};
@@ -232,7 +229,6 @@ export const getEnquiry = async (req, res) => {
   }
 };
 
-// Update enquiry status, priority and consultant assignment
 export const updateEnquiry = async (req, res) => {
   try {
     const previous = await enquiryService.getEnquiryById(req.params.id);
@@ -249,7 +245,6 @@ export const updateEnquiry = async (req, res) => {
       req.body
     );
 
-    // Log status changes
     if (
       req.body.status !== undefined &&
       req.body.status !== previous.status
@@ -265,7 +260,6 @@ export const updateEnquiry = async (req, res) => {
       });
     }
 
-    // Log priority changes
     if (
       req.body.priority !== undefined &&
       req.body.priority !== previous.priority
@@ -281,7 +275,6 @@ export const updateEnquiry = async (req, res) => {
       });
     }
 
-    // Log consultant assignment changes
     if (
       req.body.assignedToId !== undefined &&
       req.body.assignedToId !== previous.assignedToId
@@ -315,7 +308,6 @@ export const updateEnquiry = async (req, res) => {
   }
 };
 
-// Delete enquiry
 export const removeEnquiry = async (req, res) => {
   try {
     const enquiry = await enquiryService.getEnquiryById(req.params.id);
@@ -343,7 +335,6 @@ export const removeEnquiry = async (req, res) => {
   }
 };
 
-// Add a private internal note
 export const addNote = async (req, res) => {
   try {
     const { content } = req.body;
@@ -393,7 +384,6 @@ export const addNote = async (req, res) => {
   }
 };
 
-// Get internal notes
 export const getNotes = async (req, res) => {
   try {
     const enquiry = await enquiryService.getEnquiryById(req.params.id);
@@ -422,7 +412,6 @@ export const getNotes = async (req, res) => {
   }
 };
 
-// Record incoming or outgoing customer communication
 export const addMessage = async (req, res) => {
   try {
     const { content, direction } = req.body;

@@ -86,7 +86,6 @@ const recordMediaActivity = async ({ action, asset }) => {
       },
     });
   } catch (error) {
-    // Activity logging should not make an otherwise successful media action fail.
     console.error("Media activity log failed:", error);
   }
 };
@@ -112,10 +111,6 @@ export const getMediaAssets = async (filters = {}) => {
     ];
   }
 
-  // Keep the list and count queries independent. With the PostgreSQL
-  // driver adapter used by this project, wrapping these read-only queries
-  // in an array transaction can fail with P2028 while starting a transaction.
-  // A brief count/list mismatch is acceptable for this paginated admin view.
   const [assets, total] = await Promise.all([
     prisma.mediaAsset.findMany({
       where,

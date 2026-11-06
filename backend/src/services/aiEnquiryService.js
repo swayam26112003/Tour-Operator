@@ -222,8 +222,6 @@ const scorePackage = (pkg, extracted, linkedPackageId = null) => {
   const reasons = [];
   let score = 0;
 
-  // A package explicitly selected on the enquiry is the strongest available
-  // signal. Keep it only if it is still in the PUBLISHED catalogue query.
   if (linkedPackageId && pkg.id === linkedPackageId) {
     score += 55;
     reasons.push("This is the package originally selected in the enquiry");
@@ -475,14 +473,7 @@ ${JSON.stringify(context)}
 `.trim();
 };
 
-/**
- * Processes one enquiry with Gemini:
- * 1. Extracts stated travel requirements.
- * 2. Matches only published packages using package data from PostgreSQL.
- * 3. Retrieves displayed seasonal rates only from PackageSeasonalPrice rows.
- * 4. Creates an unsent reply draft for human review.
- * 5. Saves the results to the AI fields on the Enquiry record.
- */
+
 export const processEnquiryWithAI = async (enquiryId) => {
   if (!enquiryId || typeof enquiryId !== "string") {
     throw new Error("A valid enquiry ID is required.");
@@ -537,8 +528,6 @@ export const processEnquiryWithAI = async (enquiryId) => {
     orderBy: { updatedAt: "desc" },
   });
 
-  // Prioritize the enquiry's originally selected package when it remains
-  // published. All returned suggestions still come from the published DB list.
   const suggestions = recommendPackages(
     publishedPackages,
     extracted,

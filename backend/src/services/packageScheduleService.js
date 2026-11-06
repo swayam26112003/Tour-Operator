@@ -27,9 +27,6 @@ export const schedulePackage = async (packageId, scheduledAtValue) => {
     throw makeHttpError("Package not found.", 404);
   }
 
-  // Do not change an existing live listing to SCHEDULED: public queries filter
-  // on PUBLISHED, so doing so would make it disappear before the scheduled time.
-  // Schedule new/updated draft copies instead.
   if (!["DRAFT", "SCHEDULED"].includes(existing.status)) {
     throw makeHttpError(
       "Only draft packages can be scheduled. Duplicate a published package as a draft first so its live listing stays available.",
@@ -100,8 +97,6 @@ export const cancelPackageSchedule = async (packageId) => {
   return packageData;
 };
 
-// Called at startup and periodically by server.js. Each row is transitioned
-// with updateMany's status/date predicate so repeated scheduler runs are safe.
 export const publishDuePackages = async () => {
   const now = new Date();
   const duePackages = await prisma.package.findMany({

@@ -1,7 +1,6 @@
 
 import prisma from "../config/database.js";
 
-// GET ALL ARTICLES
 export const getAllArticles = async (filters = {}) => {
   const where = {};
 
@@ -30,7 +29,6 @@ export const getAllArticles = async (filters = {}) => {
   });
 };
 
-// GET ARTICLE BY ID
 export const getArticleById = async (id) => {
   return prisma.journalArticle.findUnique({
     where: { id },
@@ -46,7 +44,6 @@ export const getArticleById = async (id) => {
   });
 };
 
-// GET ARTICLE BY SLUG
 export const getArticleBySlug = async (slug) => {
   return prisma.journalArticle.findUnique({
     where: { slug },
@@ -62,7 +59,6 @@ export const getArticleBySlug = async (slug) => {
   });
 };
 
-// CREATE ARTICLE
 export const createArticle = async (data) => {
   const { relatedPackageIds = [], ...articleData } = data;
 
@@ -80,7 +76,6 @@ export const createArticle = async (data) => {
   });
 };
 
-// UPDATE ARTICLE
 export const updateArticle = async (id, data) => {
   const { relatedPackageIds, ...articleData } = data;
 
@@ -111,7 +106,6 @@ export const updateArticle = async (id, data) => {
   });
 };
 
-// PUBLISH ARTICLE
 export const publishArticle = async (id) => {
   const article = await prisma.journalArticle.findUnique({
     where: { id },
@@ -134,7 +128,6 @@ export const publishArticle = async (id) => {
   });
 };
 
-// DELETE ARTICLE
 export const deleteArticle = async (id) => {
   return prisma.journalArticle.delete({
     where: { id },
@@ -142,7 +135,6 @@ export const deleteArticle = async (id) => {
 };
 
 
-// GET PUBLISHED ARTICLES (PUBLIC)
 export const getPublishedArticles = async (filters = {}) => {
   const where = {
     status: "PUBLISHED",
@@ -188,7 +180,6 @@ export const getPublishedArticleBySlug = async (slug) => {
   });
 };
 
-// GET PUBLIC BLOG CATEGORIES
 export const getPublishedCategories = async () => {
   const articles = await prisma.journalArticle.findMany({
     where: {

@@ -7,7 +7,6 @@ import {
 
 const router = express.Router();
 
-// Activity log management
 router.get("/", getActivityLogs);
 router.get("/:entityType/:entityId", getEntityActivityLogs);
 

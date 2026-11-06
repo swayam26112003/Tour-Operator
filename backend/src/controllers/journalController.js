@@ -1,7 +1,6 @@
 
 import * as journalService from "../services/journalService.js";
 
-// GET ALL ARTICLES
 export const getAllArticlesController = async (req, res) => {
   try {
     const articles = await journalService.getAllArticles(req.query);
@@ -21,7 +20,6 @@ export const getAllArticlesController = async (req, res) => {
   }
 };
 
-// GET ARTICLE BY ID
 export const getArticleByIdController = async (req, res) => {
   try {
     const article = await journalService.getArticleById(req.params.id);
@@ -47,7 +45,6 @@ export const getArticleByIdController = async (req, res) => {
   }
 };
 
-// GET ARTICLE BY SLUG
 export const getArticleBySlugController = async (req, res) => {
   try {
     const article = await journalService.getArticleBySlug(req.params.slug);
@@ -73,7 +70,6 @@ export const getArticleBySlugController = async (req, res) => {
   }
 };
 
-// CREATE ARTICLE
 export const createArticleController = async (req, res) => {
   try {
     const article = await journalService.createArticle(req.body);
@@ -93,7 +89,6 @@ export const createArticleController = async (req, res) => {
   }
 };
 
-// UPDATE ARTICLE
 export const updateArticleController = async (req, res) => {
   try {
     const article = await journalService.updateArticle(
@@ -123,7 +118,6 @@ export const updateArticleController = async (req, res) => {
   }
 };
 
-// PUBLISH ARTICLE
 export const publishArticleController = async (req, res) => {
   try {
     const article = await journalService.publishArticle(req.params.id);
@@ -150,7 +144,6 @@ export const publishArticleController = async (req, res) => {
   }
 };
 
-// DELETE ARTICLE
 export const deleteArticleController = async (req, res) => {
   try {
     await journalService.deleteArticle(req.params.id);
@@ -178,7 +171,6 @@ export const deleteArticleController = async (req, res) => {
 
 
 
-// GET PUBLISHED ARTICLES (PUBLIC)
 export const getPublishedArticlesController = async (req, res) => {
   try {
     const articles = await journalService.getPublishedArticles(req.query);
@@ -198,7 +190,6 @@ export const getPublishedArticlesController = async (req, res) => {
   }
 };
 
-// GET PUBLISHED ARTICLE BY SLUG (PUBLIC)
 export const getPublishedArticleBySlugController = async (req, res) => {
   try {
     const article = await journalService.getPublishedArticleBySlug(
@@ -226,7 +217,6 @@ export const getPublishedArticleBySlugController = async (req, res) => {
   }
 };
 
-// GET PUBLISHED BLOG CATEGORIES
 export const getPublishedCategoriesController = async (req, res) => {
   try {
     const categories = await journalService.getPublishedCategories();
