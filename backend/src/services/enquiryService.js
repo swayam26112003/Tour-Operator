@@ -2,6 +2,10 @@
 import prisma from "../config/database.js";
 
 export const createEnquiry = async (data) => {
+  const contactConsent = Boolean(
+    data.contactConsent ?? data.consent
+  );
+
   return prisma.enquiry.create({
     data: {
       name: data.name,
@@ -13,8 +17,8 @@ export const createEnquiry = async (data) => {
       travellers: data.travellers,
       message: data.message || null,
       packageId: data.packageId || null,
-      contactConsent: form.consent,
-      contactConsentAt: new Date(),
+      contactConsent,
+      contactConsentAt: contactConsent ? new Date() : null,
     },
     include: {
       package: {
