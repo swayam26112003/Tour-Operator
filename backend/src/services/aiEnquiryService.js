@@ -42,20 +42,88 @@ const callGemini = async ({
   return text;
 };
 
+
 const parseJsonResponse = (text) => {
+  if (typeof text !== "string" || !text.trim()) {
+    throw new Error("Gemini returned an empty JSON response.");
+  }
+
   const cleaned = text
-    .replace(/^```(?:json)?\s*/i, "")
-    .replace(/\s*```$/i, "")
+    .replace(/```(?:json)?/gi, "")
     .trim();
 
   try {
-    return JSON.parse(cleaned);
+    const parsed = JSON.parse(cleaned);
+
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+      throw new Error("Expected a JSON object.");
+    }
+
+    return parsed;
   } catch {
-    throw new Error(
-      "Gemini returned an invalid structured response. Please try again."
-    );
   }
+
+  const start = cleaned.indexOf("{");
+
+  if (start === -1) {
+    throw new Error("Gemini response did not contain a JSON object.");
+  }
+
+  let depth = 0;
+  let inString = false;
+  let escaped = false;
+
+  for (let i = start; i < cleaned.length; i++) {
+    const char = cleaned[i];
+
+    if (inString) {
+      if (escaped) {
+        escaped = false;
+      } else if (char === "\\") {
+        escaped = true;
+      } else if (char === '"') {
+        inString = false;
+      }
+
+      continue;
+    }
+
+    if (char === '"') {
+      inString = true;
+    } else if (char === "{") {
+      depth++;
+    } else if (char === "}") {
+      depth--;
+
+      if (depth === 0) {
+        const jsonText = cleaned.slice(start, i + 1);
+
+        try {
+          const parsed = JSON.parse(jsonText);
+
+          if (
+            !parsed ||
+            typeof parsed !== "object" ||
+            Array.isArray(parsed)
+          ) {
+            throw new Error("Expected a JSON object.");
+          }
+
+          return parsed;
+        } catch {
+          throw new Error(
+            "Gemini returned malformed JSON. Please retry."
+          );
+        }
+      }
+    }
+  }
+
+  throw new Error(
+    "Gemini returned incomplete JSON. The response may have been truncated."
+  );
 };
+
 
 const toOptionalString = (value) => {
   if (typeof value !== "string") return null;
