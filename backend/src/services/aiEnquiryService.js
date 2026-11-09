@@ -16,10 +16,11 @@ const getGeminiClient = () => {
   return new GoogleGenAI({ apiKey });
 };
 
+
 const callGemini = async ({
   contents,
   json = false,
-  maxOutputTokens = 1200,
+  maxOutputTokens = 2000,
 }) => {
   const ai = getGeminiClient();
 
@@ -27,11 +28,26 @@ const callGemini = async ({
     model: process.env.GEMINI_MODEL || DEFAULT_MODEL,
     contents,
     config: {
-      temperature: 0.2,
+      temperature: 0.1,
       maxOutputTokens,
       ...(json ? { responseMimeType: "application/json" } : {}),
     },
   });
+
+  const candidate = response.candidates?.[0];
+
+  console.log("Gemini response diagnostics:", {
+    model: process.env.GEMINI_MODEL || DEFAULT_MODEL,
+    finishReason: candidate?.finishReason,
+    promptFeedback: response.promptFeedback,
+    responseLength: response.text?.length || 0,
+  });
+
+  if (candidate?.finishReason === "MAX_TOKENS") {
+    throw new Error(
+      "Gemini reached its output token limit. Increase maxOutputTokens."
+    );
+  }
 
   const text = response.text?.trim();
 
@@ -41,6 +57,7 @@ const callGemini = async ({
 
   return text;
 };
+
 
 
 const parseJsonResponse = (text) => {
@@ -560,7 +577,7 @@ export const processEnquiryWithAI = async (enquiryId) => {
   const extractionText = await callGemini({
     contents: buildExtractionPrompt(enquiry),
     json: true,
-    maxOutputTokens: 1000,
+    maxOutputTokens: 2000,
   });
 
   const extracted = normalizeExtractedData(
